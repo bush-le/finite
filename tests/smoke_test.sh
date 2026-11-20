@@ -28,4 +28,6 @@ if grep -rnE "eval\(|new Function|Gio\.Subprocess|spawn_command_line|gi://Soup|u
   exit 1
 fi
 
-echo "SMOKE_TASK1_OK"
+gjs -m tests/test_timeMath.js
+
+echo "SMOKE_TASK2_OK"
