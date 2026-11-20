@@ -31,4 +31,13 @@ fi
 gjs -m tests/test_timeMath.js
 gjs -m tests/test_gridRenderer.js
 
-echo "SMOKE_TASK3_OK"
+BUNDLE="finite@bush-le.github.io.shell-extension.zip"
+rm -f "$BUNDLE"
+gnome-extensions pack --force --extra-source=lib --schema=schemas/org.gnome.shell.extensions.finite.gschema.xml .
+if [[ ! -s "$BUNDLE" ]]; then
+  echo "FAIL: Missing or empty extension bundle $BUNDLE" >&2
+  exit 1
+fi
+rm -f "$BUNDLE"
+
+echo "SMOKE_ALL_OK"
