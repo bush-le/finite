@@ -29,5 +29,6 @@ if grep -rnE "eval\(|new Function|Gio\.Subprocess|spawn_command_line|gi://Soup|u
 fi
 
 gjs -m tests/test_timeMath.js
+gjs -m tests/test_gridRenderer.js
 
-echo "SMOKE_TASK2_OK"
+echo "SMOKE_TASK3_OK"
