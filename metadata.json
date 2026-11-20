@@ -1,0 +1,9 @@
+{
+  "uuid": "finite@bush-le.github.io",
+  "name": "Finite",
+  "description": "Minimalist Memento Mori countdown for the GNOME top bar.",
+  "settings-schema": "org.gnome.shell.extensions.finite",
+  "gettext-domain": "finite",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "session-modes": ["user"]
+}
