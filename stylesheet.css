@@ -1,5 +1,5 @@
 .finite-bar-label {
-    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
     font-weight: 500;
     padding: 0 4px;
 }
@@ -22,15 +22,19 @@
 .finite-subtitle {
     font-size: 0.85em;
     opacity: 0.72;
-    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
 }
 
 .finite-hero-count {
     font-size: 1.35em;
     font-weight: 700;
     text-align: center;
-    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
     padding: 2px 0;
+}
+
+.finite-grid-scroll {
+    max-height: 360px;
 }
 
 .finite-grid-area {
@@ -62,7 +66,7 @@
     font-size: 0.82em;
     opacity: 0.72;
     text-align: center;
-    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
 }
 
 .finite-reminder {

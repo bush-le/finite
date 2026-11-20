@@ -31,6 +31,19 @@ fi
 gjs -m tests/test_timeMath.js
 gjs -m tests/test_gridRenderer.js
 
+if grep -q "font-variant-numeric" stylesheet.css; then
+  echo "FAIL: St CSS ignores font-variant-numeric; use font-feature-settings: \"tnum\"" >&2
+  exit 1
+fi
+if ! grep -q 'font-feature-settings: "tnum"' stylesheet.css; then
+  echo "FAIL: stylesheet.css must use font-feature-settings: \"tnum\"" >&2
+  exit 1
+fi
+if ! grep -q "St.ScrollView" lib/popoverView.js; then
+  echo "FAIL: lib/popoverView.js must wrap the life grid in St.ScrollView" >&2
+  exit 1
+fi
+
 BUNDLE="finite@bush-le.github.io.shell-extension.zip"
 rm -f "$BUNDLE"
 gnome-extensions pack --force --extra-source=lib --schema=schemas/org.gnome.shell.extensions.finite.gschema.xml .
