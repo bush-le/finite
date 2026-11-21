@@ -5,6 +5,7 @@ import {
     computeGridGeometry,
     computeGridCacheKey,
     classifyWeekCell,
+    getThemePalette,
     GridSurfaceCache,
 } from '../lib/gridRenderer.js';
 
@@ -22,8 +23,10 @@ const geom = computeGridGeometry(80);
 assertEq(GRID_COLUMNS, 52, 'GRID_COLUMNS constant');
 assertEq(geom.cols, 52, 'cols');
 assertEq(geom.rows, 80, 'rows');
-assertTrue(geom.width >= 320 && geom.width <= 400, 'grid width balanced for popover');
-assertTrue(geom.height <= MAX_GRID_HEIGHT, '80y grid fits without scrollbar');
+assertEq(geom.leftRows, 40, '2-column split puts 40 rows on left');
+assertEq(geom.rightRows, 40, '2-column split puts 40 rows on right');
+assertTrue(geom.cellSize >= 4, '80y grid uses crisp >=4px square cells');
+assertTrue(geom.height <= MAX_GRID_HEIGHT, '80y grid fits comfortably without scrollbar');
 
 // OOM & height guard on max 150 years
 const hugeGeom = computeGridGeometry(999999);
@@ -38,13 +41,19 @@ const statsStart = computeLifeStats('2026-01-01', 80, new Date(2026, 0, 1).getTi
 assertEq(classifyWeekCell(0, statsStart), 'current', 'week 0 is current at birth');
 assertEq(classifyWeekCell(1, statsStart), 'remaining', 'week 1 remaining at birth');
 
+const amber = getThemePalette('amber');
+const cyan = getThemePalette('cyan');
+assertTrue(amber.accent[0] !== cyan.accent[0], 'distinct theme palettes');
+
 const cache = new GridSurfaceCache();
-const s1 = cache.getOrRender(statsStart, geom);
-const s2 = cache.getOrRender(statsStart, geom);
-assertEq(s1 === s2, true, 'identical stats reuses cached Cairo surface');
+const s1 = cache.getOrRender(statsStart, geom, 'amber');
+const s2 = cache.getOrRender(statsStart, geom, 'amber');
+const s3 = cache.getOrRender(statsStart, geom, 'cyan');
+assertEq(s1 === s2, true, 'identical stats + theme reuses cached Cairo surface');
+assertEq(s1 !== s3, true, 'changing theme invalidates cached surface');
 assertEq(
-    computeGridCacheKey(statsStart, geom) !==
-        computeGridCacheKey(statsEnd, geom),
+    computeGridCacheKey(statsStart, geom, 'amber') !==
+        computeGridCacheKey(statsEnd, geom, 'amber'),
     true,
     'cache key distinguishes states'
 );

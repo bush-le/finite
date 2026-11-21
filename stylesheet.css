@@ -1,7 +1,6 @@
 .finite-bar-label {
     font-feature-settings: "tnum";
     font-weight: bold;
-    padding: 0 2px;
 }
 
 .finite-font-system {
@@ -11,25 +10,23 @@
 
 .finite-font-inter {
     font-family: "Inter", "Inter Display", sans-serif;
-    font-weight: 600;
+    font-weight: bold;
 }
 
 .finite-font-jetbrains {
     font-family: "JetBrains Mono", "Adwaita Mono", monospace;
-    font-weight: 600;
-    font-size: 0.92em;
+    font-weight: bold;
 }
 
 .finite-font-mono {
     font-family: "Adwaita Mono", monospace;
-    font-weight: 600;
-    font-size: 0.92em;
+    font-weight: bold;
 }
 
 .finite-popover-box {
-    padding: 14px 18px;
+    padding: 16px 20px;
     spacing: 12px;
-    min-width: 394px;
+    min-width: 576px;
 }
 
 .finite-popover-header {
@@ -38,25 +35,25 @@
 
 .finite-title {
     font-weight: 700;
-    font-size: 1.05em;
+    font-size: 1.08em;
 }
 
 .finite-elapsed-badge {
-    font-size: 0.78em;
+    font-size: 0.80em;
     font-weight: 600;
     font-feature-settings: "tnum";
-    padding: 3px 9px;
+    padding: 3px 10px;
     border-radius: 999px;
     background-color: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.88);
 }
 
 .finite-hero-box {
-    spacing: 4px;
+    spacing: 2px;
 }
 
 .finite-hero-count {
-    font-size: 1.65em;
+    font-size: 1.85em;
     font-weight: 700;
     text-align: center;
     font-feature-settings: "tnum";
@@ -65,10 +62,34 @@
 .finite-hero-caption {
     font-size: 0.72em;
     font-weight: 600;
-    letter-spacing: 0.08em;
-    opacity: 0.60;
+    letter-spacing: 0.09em;
+    opacity: 0.58;
     text-align: center;
-    padding-bottom: 4px;
+}
+
+.finite-mini-bars-row {
+    spacing: 10px;
+}
+
+.finite-mini-bar-card {
+    padding: 8px 10px;
+    spacing: 5px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.finite-mini-bar-name {
+    font-size: 0.76em;
+    font-weight: 600;
+    opacity: 0.72;
+}
+
+.finite-mini-bar-pct {
+    font-size: 0.76em;
+    font-weight: 700;
+    font-feature-settings: "tnum";
+    opacity: 0.90;
 }
 
 .finite-progress-track {
@@ -80,13 +101,12 @@
 .finite-progress-fill {
     height: 4px;
     border-radius: 2px;
-    background-color: #f59e0b;
 }
 
 .finite-grid-card {
-    padding: 10px 10px 8px;
+    padding: 12px 14px 10px;
     spacing: 8px;
-    border-radius: 10px;
+    border-radius: 12px;
     background-color: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -96,7 +116,7 @@
 }
 
 .finite-legend-row {
-    spacing: 14px;
+    spacing: 16px;
 }
 
 .finite-legend-chip {
@@ -104,27 +124,27 @@
 }
 
 .finite-legend-dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 2px;
 }
 
 .finite-dot-lived {
-    background-color: rgba(235, 235, 240, 0.85);
-}
-
-.finite-dot-now {
-    background-color: #f59e0b;
+    background-color: rgba(148, 163, 184, 0.78);
 }
 
 .finite-dot-left {
-    background-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.12);
 }
 
 .finite-legend-text {
-    font-size: 0.75em;
-    opacity: 0.72;
+    font-size: 0.76em;
+    opacity: 0.74;
     font-feature-settings: "tnum";
+}
+
+.finite-controls-row {
+    spacing: 12px;
 }
 
 .finite-unit-segment {
@@ -137,7 +157,7 @@
 .finite-unit-pill {
     padding: 4px 10px;
     border-radius: 999px;
-    font-size: 0.8em;
+    font-size: 0.80em;
     font-weight: 600;
     background-color: transparent;
 }
@@ -148,21 +168,48 @@
 
 .finite-unit-pill-active,
 .finite-unit-pill-active:hover {
-    background-color: #f59e0b;
-    color: #111113;
+    color: #0b0f17;
     font-weight: 700;
+}
+
+.finite-theme-amber .finite-progress-fill,
+.finite-theme-amber .finite-dot-now,
+.finite-theme-amber .finite-unit-pill-active,
+.finite-theme-amber .finite-unit-pill-active:hover {
+    background-color: #f59e0b;
+}
+
+.finite-theme-cyan .finite-progress-fill,
+.finite-theme-cyan .finite-dot-now,
+.finite-theme-cyan .finite-unit-pill-active,
+.finite-theme-cyan .finite-unit-pill-active:hover {
+    background-color: #38bdf8;
+}
+
+.finite-theme-emerald .finite-progress-fill,
+.finite-theme-emerald .finite-dot-now,
+.finite-theme-emerald .finite-unit-pill-active,
+.finite-theme-emerald .finite-unit-pill-active:hover {
+    background-color: #34d399;
+}
+
+.finite-theme-rose .finite-progress-fill,
+.finite-theme-rose .finite-dot-now,
+.finite-theme-rose .finite-unit-pill-active,
+.finite-theme-rose .finite-unit-pill-active:hover {
+    background-color: #fb7185;
 }
 
 .finite-summary-row {
     font-size: 0.80em;
-    opacity: 0.68;
-    text-align: center;
+    opacity: 0.70;
+    text-align: right;
     font-feature-settings: "tnum";
 }
 
 .finite-footer-row {
-    spacing: 10px;
-    padding-top: 2px;
+    spacing: 12px;
+    padding-top: 4px;
     border-top-width: 1px;
     border-color: rgba(255, 255, 255, 0.08);
 }
@@ -170,13 +217,13 @@
 .finite-reminder {
     font-size: 0.84em;
     font-style: italic;
-    opacity: 0.82;
-    max-width: 280px;
+    opacity: 0.80;
+    max-width: 440px;
     padding-top: 6px;
 }
 
 .finite-prefs-btn {
-    padding: 5px 12px;
+    padding: 5px 14px;
     margin-top: 4px;
     border-radius: 8px;
     font-size: 0.82em;

@@ -10,6 +10,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {
     VALID_FONTS,
+    clampBarFontSize,
     computeLifeStats,
     computeNextDelaySeconds,
     formatBarValue,
@@ -80,28 +81,32 @@ class FiniteIndicator extends PanelMenu.Button {
         this.menu.addMenuItem(this._menuItem);
     }
 
-    _applyFontPreset(fontPreset) {
+    _applyFontStyle(fontPreset, fontSize) {
         if (!this._label)
             return;
         const safePreset = normalizeFontPreset(fontPreset);
         const nextClass = `finite-font-${safePreset}`;
-        if (this._activeFontClass === nextClass)
-            return;
-
-        for (const preset of VALID_FONTS)
-            this._label.remove_style_class_name(`finite-font-${preset}`);
-        this._label.add_style_class_name(nextClass);
-        this._activeFontClass = nextClass;
+        if (this._activeFontClass !== nextClass) {
+            for (const preset of VALID_FONTS)
+                this._label.remove_style_class_name(`finite-font-${preset}`);
+            this._label.add_style_class_name(nextClass);
+            this._activeFontClass = nextClass;
+        }
+        const safeSize = clampBarFontSize(fontSize);
+        if (this._activeFontSize !== safeSize) {
+            this._label.style = `font-size: ${safeSize}px;`;
+            this._activeFontSize = safeSize;
+        }
     }
 
-    updateView(stats, unit, expectancyYears, reminderText, lang, fontPreset) {
+    updateView(stats, unit, expectancyYears, reminderText, lang, fontPreset, fontSize, accentTheme) {
         if (this._label) {
-            this._applyFontPreset(fontPreset);
+            this._applyFontStyle(fontPreset, fontSize);
             this._label.text = formatBarValue(stats, unit);
         }
 
         if (this._popoverOpen && this._popoverView)
-            this._popoverView.update(stats, unit, expectancyYears, reminderText, lang);
+            this._popoverView.update(stats, unit, expectancyYears, reminderText, lang, accentTheme);
     }
 
     destroy() {
@@ -141,6 +146,8 @@ export default class FiniteExtension extends Extension {
             'life-expectancy-years',
             'display-unit',
             'font-preset',
+            'bar-font-size',
+            'accent-theme',
             'language',
             'reminder-text',
         ]) {
@@ -212,12 +219,23 @@ export default class FiniteExtension extends Extension {
         const expectancyYears = this._settings.get_int('life-expectancy-years');
         const unit = this._settings.get_string('display-unit');
         const fontPreset = this._settings.get_string('font-preset');
+        const fontSize = this._settings.get_int('bar-font-size');
+        const accentTheme = this._settings.get_string('accent-theme');
         const prefLang = this._settings.get_string('language');
         const lang = resolveLanguage(prefLang, GLib.get_language_names());
         const reminderText = this._settings.get_string('reminder-text');
 
         const stats = computeLifeStats(birthDate, expectancyYears, nowMs);
-        this._indicator.updateView(stats, unit, expectancyYears, reminderText, lang, fontPreset);
+        this._indicator.updateView(
+            stats,
+            unit,
+            expectancyYears,
+            reminderText,
+            lang,
+            fontPreset,
+            fontSize,
+            accentTheme
+        );
 
         if (!stats)
             return;

@@ -36,6 +36,23 @@
       <summary>Top bar font preset</summary>
       <description>Font family preset used for the top bar counter.</description>
     </key>
+    <key name="bar-font-size" type="i">
+      <range min="10" max="24"/>
+      <default>15</default>
+      <summary>Top bar font size (px)</summary>
+      <description>Font size in pixels for the top bar counter.</description>
+    </key>
+    <key name="accent-theme" type="s">
+      <choices>
+        <choice value="amber"/>
+        <choice value="cyan"/>
+        <choice value="emerald"/>
+        <choice value="rose"/>
+      </choices>
+      <default>"amber"</default>
+      <summary>Popover accent theme</summary>
+      <description>Accent color theme for progress bars and current week.</description>
+    </key>
     <key name="panel-position" type="s">
       <choices>
         <choice value="left"/>

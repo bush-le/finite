@@ -6,7 +6,10 @@ import Gtk from 'gi://Gtk';
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 import {
+    MAX_BAR_FONT_SIZE,
     MAX_REMINDER_LENGTH,
+    MIN_BAR_FONT_SIZE,
+    VALID_ACCENTS,
     VALID_FONTS,
     VALID_UNITS,
     parseLocalBirthDate,
@@ -126,6 +129,34 @@ export default class FinitePreferences extends ExtensionPreferences {
                     settings.set_string('font-preset', key);
             });
             displayGroup.add(fontRow);
+
+            const fontSizeRow = Adw.SpinRow.new_with_range(
+                MIN_BAR_FONT_SIZE,
+                MAX_BAR_FONT_SIZE,
+                1
+            );
+            fontSizeRow.set_title(t('fontSizeTitle', lang));
+            settings.bind(
+                'bar-font-size',
+                fontSizeRow,
+                'value',
+                Gio.SettingsBindFlags.DEFAULT
+            );
+            displayGroup.add(fontSizeRow);
+
+            const accentRow = new Adw.ComboRow({
+                title: t('accentThemeTitle', lang),
+                model: Gtk.StringList.new(t('accentLabels', lang)),
+            });
+            const currentAccent = settings.get_string('accent-theme');
+            const accentIdx = VALID_ACCENTS.indexOf(currentAccent);
+            accentRow.set_selected(accentIdx >= 0 ? accentIdx : 0);
+            accentRow.connect('notify::selected', () => {
+                const key = VALID_ACCENTS[accentRow.get_selected()];
+                if (key && settings.get_string('accent-theme') !== key)
+                    settings.set_string('accent-theme', key);
+            });
+            displayGroup.add(accentRow);
 
             const posRow = new Adw.ComboRow({
                 title: t('positionTitle', lang),

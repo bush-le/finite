@@ -1,8 +1,12 @@
 import {
     VALID_UNITS,
+    VALID_FONTS,
+    VALID_ACCENTS,
+    clampBarFontSize,
     parseLocalBirthDate,
     computeTargetDate,
     computeLifeStats,
+    computeDayAndYearProgress,
     formatBarValue,
     formatPopoverHero,
     computeNextDelaySeconds,
@@ -13,8 +17,20 @@ function assertEq(actual, expected, label) {
         throw new Error(`FAIL [${label}]: expected=${expected}, actual=${actual}`);
 }
 
-// 0. Valid units whitelist
+// 0. Valid units, fonts, accents & bar font size clamp
 assertEq(VALID_UNITS.join(','), 'seconds,minutes,hours,days,weeks,percent', 'valid units');
+assertEq(VALID_FONTS.join(','), 'system,inter,jetbrains,mono', 'valid fonts');
+assertEq(VALID_ACCENTS.join(','), 'amber,cyan,emerald,rose', 'valid accents');
+assertEq(clampBarFontSize(8), 10, 'font size min clamp');
+assertEq(clampBarFontSize(40), 24, 'font size max clamp');
+assertEq(clampBarFontSize(15), 15, 'font size valid');
+
+// 0b. Day & year progress helper
+const midday = new Date(2026, 6, 2, 12, 0, 0, 0).getTime();
+const dy = computeDayAndYearProgress(midday);
+assertEq(Math.round(dy.todayElapsedPct), 50, 'midday is 50% of day');
+assertEq(dy.year, 2026, 'year extracted');
+assertEq(dy.yearElapsedPct > 49 && dy.yearElapsedPct < 52, true, 'mid-year ~50%');
 
 // 1. Invalid / empty / non-existent calendar dates -> null & "--"
 assertEq(parseLocalBirthDate(''), null, 'empty date');
