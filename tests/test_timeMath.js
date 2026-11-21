@@ -7,6 +7,7 @@ import {
     computeTargetDate,
     computeLifeStats,
     computeDayAndYearProgress,
+    computeYearDaysStats,
     formatBarValue,
     formatPopoverHero,
     computeNextDelaySeconds,
@@ -31,6 +32,19 @@ const dy = computeDayAndYearProgress(midday);
 assertEq(Math.round(dy.todayElapsedPct), 50, 'midday is 50% of day');
 assertEq(dy.year, 2026, 'year extracted');
 assertEq(dy.yearElapsedPct > 49 && dy.yearElapsedPct < 52, true, 'mid-year ~50%');
+
+// 0c. Year days stats for GitHub-style 365/366 grid
+const jan1 = new Date(2026, 0, 1, 8, 0, 0).getTime();
+const y2026Start = computeYearDaysStats(jan1);
+assertEq(y2026Start.year, 2026, '2026 year');
+assertEq(y2026Start.totalDays, 365, '2026 has 365 days');
+assertEq(y2026Start.todayIndex, 0, 'Jan 1 is day index 0');
+assertEq(y2026Start.daysLeft, 364, '364 days left after Jan 1');
+
+const leapMar1 = new Date(2024, 2, 1, 8, 0, 0).getTime();
+const y2024 = computeYearDaysStats(leapMar1);
+assertEq(y2024.totalDays, 366, '2024 leap year has 366 days');
+assertEq(y2024.todayIndex, 31 + 29, 'Mar 1 in leap year is index 60');
 
 // 1. Invalid / empty / non-existent calendar dates -> null & "--"
 assertEq(parseLocalBirthDate(''), null, 'empty date');
