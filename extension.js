@@ -9,10 +9,13 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {
+    VALID_FONTS,
     computeLifeStats,
     computeNextDelaySeconds,
     formatBarValue,
+    normalizeFontPreset,
 } from './lib/timeMath.js';
+import { resolveLanguage } from './lib/i18n.js';
 import { FinitePopoverView } from './lib/popoverView.js';
 
 const FiniteIndicator = GObject.registerClass(
@@ -27,6 +30,7 @@ class FiniteIndicator extends PanelMenu.Button {
         this._popoverOpen = false;
         this._popoverView = null;
         this._menuItem = null;
+        this._activeFontClass = null;
 
         this._label = new St.Label({
             text: '--',
@@ -35,14 +39,15 @@ class FiniteIndicator extends PanelMenu.Button {
         });
         this.add_child(this._label);
 
+        // PopupMenu.open() skips opening when menu.isEmpty() is true, so register the menu item up front.
+        this._ensurePopover();
+
         this._mappedSignalId = this._label.connect('notify::mapped', () => {
             this._onStateChange?.();
         });
 
         this._menuSignalId = this.menu.connect('open-state-changed', (_menu, isOpen) => {
             this._popoverOpen = isOpen;
-            if (isOpen && !this._popoverView)
-                this._ensurePopover();
             this._onStateChange?.();
         });
     }
@@ -75,12 +80,28 @@ class FiniteIndicator extends PanelMenu.Button {
         this.menu.addMenuItem(this._menuItem);
     }
 
-    updateView(stats, unit, expectancyYears, reminderText) {
-        if (this._label)
+    _applyFontPreset(fontPreset) {
+        if (!this._label)
+            return;
+        const safePreset = normalizeFontPreset(fontPreset);
+        const nextClass = `finite-font-${safePreset}`;
+        if (this._activeFontClass === nextClass)
+            return;
+
+        for (const preset of VALID_FONTS)
+            this._label.remove_style_class_name(`finite-font-${preset}`);
+        this._label.add_style_class_name(nextClass);
+        this._activeFontClass = nextClass;
+    }
+
+    updateView(stats, unit, expectancyYears, reminderText, lang, fontPreset) {
+        if (this._label) {
+            this._applyFontPreset(fontPreset);
             this._label.text = formatBarValue(stats, unit);
+        }
 
         if (this._popoverOpen && this._popoverView)
-            this._popoverView.update(stats, unit, expectancyYears, reminderText);
+            this._popoverView.update(stats, unit, expectancyYears, reminderText, lang);
     }
 
     destroy() {
@@ -98,6 +119,9 @@ class FiniteIndicator extends PanelMenu.Button {
         }
         this._menuItem = null;
         this._label = null;
+        this._onSelectUnit = null;
+        this._onOpenPrefs = null;
+        this._onStateChange = null;
         super.destroy();
     }
 });
@@ -112,7 +136,14 @@ export default class FiniteExtension extends Extension {
             this._onWake();
         });
 
-        for (const key of ['birth-date', 'life-expectancy-years', 'display-unit', 'reminder-text']) {
+        for (const key of [
+            'birth-date',
+            'life-expectancy-years',
+            'display-unit',
+            'font-preset',
+            'language',
+            'reminder-text',
+        ]) {
             this._settingsSignals.push(
                 this._settings.connect(`changed::${key}`, () => this._onWake())
             );
@@ -137,7 +168,8 @@ export default class FiniteExtension extends Extension {
 
         const pos = this._settings.get_string('panel-position');
         const box = ['left', 'center', 'right'].includes(pos) ? pos : 'center';
-        const index = this._settings.get_int('panel-index');
+        const rawIndex = this._settings.get_int('panel-index');
+        const index = Math.min(20, Math.max(0, rawIndex));
 
         Main.panel.addToStatusArea(this.uuid, this._indicator, index, box);
     }
@@ -157,6 +189,8 @@ export default class FiniteExtension extends Extension {
             return true;
 
         const primary = Main.layoutManager.primaryIndex;
+        if (primary < 0)
+            return true;
         return global.display.get_monitor_in_fullscreen(primary);
     }
 
@@ -177,10 +211,16 @@ export default class FiniteExtension extends Extension {
         const birthDate = this._settings.get_string('birth-date');
         const expectancyYears = this._settings.get_int('life-expectancy-years');
         const unit = this._settings.get_string('display-unit');
+        const fontPreset = this._settings.get_string('font-preset');
+        const prefLang = this._settings.get_string('language');
+        const lang = resolveLanguage(prefLang, GLib.get_language_names());
         const reminderText = this._settings.get_string('reminder-text');
 
         const stats = computeLifeStats(birthDate, expectancyYears, nowMs);
-        this._indicator.updateView(stats, unit, expectancyYears, reminderText);
+        this._indicator.updateView(stats, unit, expectancyYears, reminderText, lang, fontPreset);
+
+        if (!stats)
+            return;
 
         const delaySec = computeNextDelaySeconds(
             unit,

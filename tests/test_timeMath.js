@@ -23,7 +23,8 @@ assertEq(parseLocalBirthDate('not-a-date'), null, 'garbage');
 assertEq(parseLocalBirthDate('1800-01-01'), null, 'year before 1900 rejected');
 assertEq(computeLifeStats('', 80, Date.now()), null, 'empty stats');
 assertEq(formatBarValue(null, 'seconds'), '--', 'null bar fallback');
-assertEq(formatPopoverHero(null, 'seconds'), 'Chưa đặt ngày sinh', 'null popover hero');
+assertEq(formatPopoverHero(null, 'seconds', 'vi'), 'Chưa đặt ngày sinh', 'null popover hero vi');
+assertEq(formatPopoverHero(null, 'seconds', 'en'), 'Set birth date in Settings', 'null popover hero en');
 
 // 2. Leap-day birth with odd expectancy clamps to Feb 28 (no March rollover)
 const leapTarget = computeTargetDate(parseLocalBirthDate('2000-02-29'), 81);
@@ -52,8 +53,10 @@ const midStats = computeLifeStats('1996-01-01', 80, midNow);
 assertEq(/^\d+$/.test(formatBarValue(midStats, 'seconds')), true, 'seconds plain digits only');
 assertEq(/^\d+$/.test(formatBarValue(midStats, 'weeks')), true, 'weeks plain digits only');
 assertEq(/^\d+\.\d{2}$/.test(formatBarValue(midStats, 'percent')), true, 'percent 2 decimals without %');
-assertEq(formatPopoverHero(midStats, 'seconds').endsWith(' giây còn lại'), true, 'popover hero seconds label');
-assertEq(formatPopoverHero(midStats, 'percent').endsWith('% còn lại'), true, 'popover hero percent label');
+assertEq(formatPopoverHero(midStats, 'seconds', 'vi').endsWith(' giây còn lại'), true, 'popover hero seconds label vi');
+assertEq(formatPopoverHero(midStats, 'percent', 'vi').endsWith('% còn lại'), true, 'popover hero percent label vi');
+assertEq(formatPopoverHero(midStats, 'seconds', 'en').endsWith(' seconds left'), true, 'popover hero seconds label en');
+assertEq(formatPopoverHero(midStats, 'percent', 'en').endsWith('% left'), true, 'popover hero percent label en');
 
 // 6. Adaptive timer delays & paused zero-wakeup
 assertEq(computeNextDelaySeconds('seconds', midNow, false, true), null, 'paused yields null');

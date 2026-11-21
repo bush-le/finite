@@ -1,20 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-  <enum id="org.gnome.shell.extensions.finite.DisplayUnit">
-    <value nick="seconds" value="0"/>
-    <value nick="minutes" value="1"/>
-    <value nick="hours" value="2"/>
-    <value nick="days" value="3"/>
-    <value nick="weeks" value="4"/>
-    <value nick="percent" value="5"/>
-  </enum>
-
-  <enum id="org.gnome.shell.extensions.finite.PanelPosition">
-    <value nick="left" value="0"/>
-    <value nick="center" value="1"/>
-    <value nick="right" value="2"/>
-  </enum>
-
   <schema id="org.gnome.shell.extensions.finite" path="/org/gnome/shell/extensions/finite/">
     <key name="birth-date" type="s">
       <default>""</default>
@@ -40,6 +25,17 @@
       <summary>Top bar display unit</summary>
       <description>Unit shown as a plain number on the GNOME top bar.</description>
     </key>
+    <key name="font-preset" type="s">
+      <choices>
+        <choice value="inter"/>
+        <choice value="system"/>
+        <choice value="jetbrains"/>
+        <choice value="mono"/>
+      </choices>
+      <default>"inter"</default>
+      <summary>Top bar font preset</summary>
+      <description>Font family preset used for the top bar counter.</description>
+    </key>
     <key name="panel-position" type="s">
       <choices>
         <choice value="left"/>
@@ -56,8 +52,18 @@
       <summary>Panel box position index</summary>
       <description>Insertion index inside the selected GNOME top bar box.</description>
     </key>
+    <key name="language" type="s">
+      <choices>
+        <choice value="auto"/>
+        <choice value="en"/>
+        <choice value="vi"/>
+      </choices>
+      <default>"auto"</default>
+      <summary>UI language</summary>
+      <description>Interface language for popover and preferences (auto, en, vi).</description>
+    </key>
     <key name="reminder-text" type="s">
-      <default>"Hôm nay là một phần không quay lại."</default>
+      <default>"Today will not return."</default>
       <summary>Popover reminder quote</summary>
       <description>Short plain-text reminder shown inside the life-grid popover.</description>
     </key>

@@ -30,6 +30,7 @@ fi
 
 gjs -m tests/test_timeMath.js
 gjs -m tests/test_gridRenderer.js
+gjs -m tests/test_i18n.js
 
 if grep -q "font-variant-numeric" stylesheet.css; then
   echo "FAIL: St CSS ignores font-variant-numeric; use font-feature-settings: \"tnum\"" >&2
@@ -41,6 +42,10 @@ if ! grep -q 'font-feature-settings: "tnum"' stylesheet.css; then
 fi
 if ! grep -q "St.ScrollView" lib/popoverView.js; then
   echo "FAIL: lib/popoverView.js must wrap the life grid in St.ScrollView" >&2
+  exit 1
+fi
+if ! grep -q "this._ensurePopover()" extension.js; then
+  echo "FAIL: extension.js must initialize menu item up front so PopupMenu is never empty" >&2
   exit 1
 fi
 
