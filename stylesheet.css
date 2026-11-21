@@ -1,36 +1,35 @@
 .finite-bar-label {
     font-feature-settings: "tnum";
-    font-weight: 600;
-    padding: 0 4px;
-    letter-spacing: 0.01em;
-}
-
-.finite-font-inter {
-    font-family: "Inter Display", "Inter", sans-serif;
-    font-weight: 600;
+    font-weight: bold;
+    padding: 0 2px;
 }
 
 .finite-font-system {
     font-family: inherit;
-    font-weight: 700;
+    font-weight: bold;
+}
+
+.finite-font-inter {
+    font-family: "Inter", "Inter Display", sans-serif;
+    font-weight: 600;
 }
 
 .finite-font-jetbrains {
     font-family: "JetBrains Mono", "Adwaita Mono", monospace;
     font-weight: 600;
-    font-size: 0.94em;
+    font-size: 0.92em;
 }
 
 .finite-font-mono {
     font-family: "Adwaita Mono", monospace;
     font-weight: 600;
-    font-size: 0.94em;
+    font-size: 0.92em;
 }
 
 .finite-popover-box {
-    padding: 12px 16px;
-    spacing: 10px;
-    min-width: 324px;
+    padding: 14px 18px;
+    spacing: 12px;
+    min-width: 394px;
 }
 
 .finite-popover-header {
@@ -39,73 +38,149 @@
 
 .finite-title {
     font-weight: 700;
-    font-size: 1.0em;
+    font-size: 1.05em;
 }
 
-.finite-subtitle {
-    font-size: 0.85em;
+.finite-elapsed-badge {
+    font-size: 0.78em;
+    font-weight: 600;
+    font-feature-settings: "tnum";
+    padding: 3px 9px;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.finite-hero-box {
+    spacing: 4px;
+}
+
+.finite-hero-count {
+    font-size: 1.65em;
+    font-weight: 700;
+    text-align: center;
+    font-feature-settings: "tnum";
+}
+
+.finite-hero-caption {
+    font-size: 0.72em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    opacity: 0.60;
+    text-align: center;
+    padding-bottom: 4px;
+}
+
+.finite-progress-track {
+    height: 4px;
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.10);
+}
+
+.finite-progress-fill {
+    height: 4px;
+    border-radius: 2px;
+    background-color: #f59e0b;
+}
+
+.finite-grid-card {
+    padding: 10px 10px 8px;
+    spacing: 8px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.finite-grid-area {
+    margin: 0;
+}
+
+.finite-legend-row {
+    spacing: 14px;
+}
+
+.finite-legend-chip {
+    spacing: 5px;
+}
+
+.finite-legend-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+}
+
+.finite-dot-lived {
+    background-color: rgba(235, 235, 240, 0.85);
+}
+
+.finite-dot-now {
+    background-color: #f59e0b;
+}
+
+.finite-dot-left {
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+.finite-legend-text {
+    font-size: 0.75em;
     opacity: 0.72;
     font-feature-settings: "tnum";
 }
 
-.finite-hero-count {
-    font-size: 1.35em;
-    font-weight: 700;
-    text-align: center;
-    font-feature-settings: "tnum";
-    padding: 2px 0;
-}
-
-.finite-grid-scroll {
-    max-height: 360px;
-}
-
-.finite-grid-area {
-    margin: 2px 0;
-}
-
-.finite-unit-row {
-    spacing: 4px;
+.finite-unit-segment {
+    padding: 3px;
+    spacing: 3px;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.06);
 }
 
 .finite-unit-pill {
-    padding: 3px 8px;
+    padding: 4px 10px;
     border-radius: 999px;
     font-size: 0.8em;
-    background-color: rgba(255, 255, 255, 0.08);
+    font-weight: 600;
+    background-color: transparent;
 }
 
 .finite-unit-pill:hover {
-    background-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.10);
 }
 
 .finite-unit-pill-active,
 .finite-unit-pill-active:hover {
-    background-color: rgba(245, 158, 11, 0.90);
+    background-color: #f59e0b;
     color: #111113;
     font-weight: 700;
 }
 
 .finite-summary-row {
-    font-size: 0.82em;
-    opacity: 0.72;
+    font-size: 0.80em;
+    opacity: 0.68;
     text-align: center;
     font-feature-settings: "tnum";
 }
 
-.finite-reminder {
-    font-size: 0.88em;
-    font-style: italic;
-    opacity: 0.85;
-    text-align: center;
-    max-width: 308px;
+.finite-footer-row {
+    spacing: 10px;
     padding-top: 2px;
+    border-top-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.finite-reminder {
+    font-size: 0.84em;
+    font-style: italic;
+    opacity: 0.82;
+    max-width: 280px;
+    padding-top: 6px;
 }
 
 .finite-prefs-btn {
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.85em;
+    padding: 5px 12px;
+    margin-top: 4px;
+    border-radius: 8px;
+    font-size: 0.82em;
+    font-weight: 600;
     background-color: rgba(255, 255, 255, 0.08);
 }
 

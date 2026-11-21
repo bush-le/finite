@@ -4,6 +4,7 @@ import {
     resolveLanguage,
     t,
     unitShortLabel,
+    unitCaptionLabel,
     formatSummaryRow,
 } from '../lib/i18n.js';
 
@@ -24,17 +25,19 @@ assertEq(resolveLanguage('auto', ['en_US.UTF-8', 'C']), 'en', 'auto picks en fro
 
 assertEq(unitShortLabel('seconds', 'en'), 'Sec', 'en seconds pill');
 assertEq(unitShortLabel('seconds', 'vi'), 'Giây', 'vi seconds pill');
+assertEq(unitCaptionLabel('seconds', 'en'), 'seconds remaining', 'en seconds caption');
+assertEq(unitCaptionLabel('seconds', 'vi'), 'giây còn lại', 'vi seconds caption');
 assertEq(t('settingsButton', 'en'), 'Settings', 'en settings button');
 assertEq(t('settingsButton', 'vi'), 'Cài đặt', 'vi settings button');
 
 assertEq(
     formatSummaryRow({ remainingWeeks: 10, remainingDays: 70, remainingHours: 1680 }, 'en'),
-    '10w · 70d · 1680h',
+    '10w · 70d · 1,680h',
     'en summary row'
 );
 assertEq(
     formatSummaryRow({ remainingWeeks: 10, remainingDays: 70, remainingHours: 1680 }, 'vi'),
-    '10 tuần · 70 ngày · 1680 giờ',
+    '10 tuần · 70 ngày · 1,680 giờ',
     'vi summary row'
 );
 

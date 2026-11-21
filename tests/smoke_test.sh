@@ -40,8 +40,8 @@ if ! grep -q 'font-feature-settings: "tnum"' stylesheet.css; then
   echo "FAIL: stylesheet.css must use font-feature-settings: \"tnum\"" >&2
   exit 1
 fi
-if ! grep -q "St.ScrollView" lib/popoverView.js; then
-  echo "FAIL: lib/popoverView.js must wrap the life grid in St.ScrollView" >&2
+if grep -q "St.ScrollView" lib/popoverView.js; then
+  echo "FAIL: lib/popoverView.js must NOT use a scrollbar (grid must fit cleanly)" >&2
   exit 1
 fi
 if ! grep -q "this._ensurePopover()" extension.js; then

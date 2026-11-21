@@ -27,12 +27,12 @@
     </key>
     <key name="font-preset" type="s">
       <choices>
-        <choice value="inter"/>
         <choice value="system"/>
+        <choice value="inter"/>
         <choice value="jetbrains"/>
         <choice value="mono"/>
       </choices>
-      <default>"inter"</default>
+      <default>"system"</default>
       <summary>Top bar font preset</summary>
       <description>Font family preset used for the top bar counter.</description>
     </key>
