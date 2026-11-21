@@ -22,9 +22,14 @@ modes = meta.get("session-modes", [])
 assert modes == ["user"], f"session-modes must be ['user'], got {modes}"
 PY
 
-if grep -rnE "eval\(|new Function|Gio\.Subprocess|spawn_command_line|gi://Soup|use_markup|/home/" \
-  extension.js prefs.js lib/ metadata.json schemas/ 2>/dev/null; then
-  echo "FAIL: Forbidden insecure pattern or local path found" >&2
+if grep -rnE "eval\(|new Function|Gio\.Subprocess|GLib\.spawn_|spawn_command_line|gi://Soup|use_markup" \
+  extension.js prefs.js lib/ metadata.json schemas/ Makefile 2>/dev/null; then
+  echo "FAIL: Forbidden insecure pattern found in code" >&2
+  exit 1
+fi
+if grep -rn "/home/" \
+  extension.js prefs.js lib/ metadata.json schemas/ README.md SECURITY.md Makefile tests/*.js 2>/dev/null; then
+  echo "FAIL: Local /home/ path found" >&2
   exit 1
 fi
 
@@ -34,6 +39,14 @@ gjs -m tests/test_i18n.js
 
 if grep -q "font-variant-numeric" stylesheet.css; then
   echo "FAIL: St CSS ignores font-variant-numeric; use font-feature-settings: \"tnum\"" >&2
+  exit 1
+fi
+if grep -qE "font-family: inherit;|font-family:[^;]*,[^;]*,[^;]*;" stylesheet.css; then
+  echo "FAIL: St libcroco rejects font-family: inherit or 3+ family lists" >&2
+  exit 1
+fi
+if grep -qE "Top bar & Display|Thanh GNOME & Giao diện" lib/i18n.js; then
+  echo "FAIL: Unescaped ampersand in Adw.PreferencesGroup title breaks Pango markup" >&2
   exit 1
 fi
 if ! grep -q 'font-feature-settings: "tnum"' stylesheet.css; then

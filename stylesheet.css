@@ -4,17 +4,16 @@
 }
 
 .finite-font-system {
-    font-family: inherit;
     font-weight: bold;
 }
 
 .finite-font-inter {
-    font-family: "Inter", "Inter Display", sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: bold;
 }
 
 .finite-font-jetbrains {
-    font-family: "JetBrains Mono", "Adwaita Mono", monospace;
+    font-family: "JetBrains Mono", monospace;
     font-weight: bold;
 }
 
@@ -140,7 +139,7 @@
 
 .finite-legend-text {
     font-size: 0.76em;
-    opacity: 0.74;
+    color: rgba(255, 255, 255, 0.74);
     font-feature-settings: "tnum";
 }
 
@@ -160,15 +159,19 @@
     border-radius: 999px;
     font-size: 0.80em;
     font-weight: 600;
+    color: rgba(255, 255, 255, 0.76);
     background-color: transparent;
 }
 
-.finite-unit-pill:hover {
-    background-color: rgba(255, 255, 255, 0.10);
+.finite-unit-pill:hover,
+.finite-unit-pill:focus {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
 }
 
 .finite-unit-pill-active,
-.finite-unit-pill-active:hover {
+.finite-unit-pill-active:hover,
+.finite-unit-pill-active:focus {
     color: #0b0f17;
     font-weight: 700;
 }
@@ -176,34 +179,38 @@
 .finite-theme-amber .finite-progress-fill,
 .finite-theme-amber .finite-dot-now,
 .finite-theme-amber .finite-unit-pill-active,
-.finite-theme-amber .finite-unit-pill-active:hover {
+.finite-theme-amber .finite-unit-pill-active:hover,
+.finite-theme-amber .finite-unit-pill-active:focus {
     background-color: #f59e0b;
 }
 
 .finite-theme-cyan .finite-progress-fill,
 .finite-theme-cyan .finite-dot-now,
 .finite-theme-cyan .finite-unit-pill-active,
-.finite-theme-cyan .finite-unit-pill-active:hover {
+.finite-theme-cyan .finite-unit-pill-active:hover,
+.finite-theme-cyan .finite-unit-pill-active:focus {
     background-color: #38bdf8;
 }
 
 .finite-theme-emerald .finite-progress-fill,
 .finite-theme-emerald .finite-dot-now,
 .finite-theme-emerald .finite-unit-pill-active,
-.finite-theme-emerald .finite-unit-pill-active:hover {
+.finite-theme-emerald .finite-unit-pill-active:hover,
+.finite-theme-emerald .finite-unit-pill-active:focus {
     background-color: #34d399;
 }
 
 .finite-theme-rose .finite-progress-fill,
 .finite-theme-rose .finite-dot-now,
 .finite-theme-rose .finite-unit-pill-active,
-.finite-theme-rose .finite-unit-pill-active:hover {
+.finite-theme-rose .finite-unit-pill-active:hover,
+.finite-theme-rose .finite-unit-pill-active:focus {
     background-color: #fb7185;
 }
 
 .finite-summary-row {
     font-size: 0.80em;
-    opacity: 0.70;
+    color: rgba(255, 255, 255, 0.70);
     text-align: right;
     font-feature-settings: "tnum";
 }
@@ -218,7 +225,7 @@
 .finite-reminder {
     font-size: 0.84em;
     font-style: italic;
-    opacity: 0.80;
+    color: rgba(255, 255, 255, 0.80);
     max-width: 440px;
     padding-top: 6px;
 }
@@ -233,6 +240,64 @@
     background-color: rgba(255, 255, 255, 0.10);
 }
 
-.finite-prefs-btn:hover {
+.finite-prefs-btn:hover,
+.finite-prefs-btn:focus {
     background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Light Shell Theme Overrides */
+.finite-mode-light .finite-title,
+.finite-mode-light .finite-hero-count,
+.finite-mode-light .finite-mini-bar-pct {
+    color: #0f172a;
+}
+
+.finite-mode-light .finite-elapsed-badge {
+    background-color: rgba(15, 23, 42, 0.08);
+    color: #1e293b;
+}
+
+.finite-mode-light .finite-hero-caption,
+.finite-mode-light .finite-mini-bar-name,
+.finite-mode-light .finite-legend-text,
+.finite-mode-light .finite-summary-row,
+.finite-mode-light .finite-reminder {
+    color: rgba(15, 23, 42, 0.72);
+}
+
+.finite-mode-light .finite-mini-bar-card,
+.finite-mode-light .finite-grid-card {
+    background-color: rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(15, 23, 42, 0.09);
+}
+
+.finite-mode-light .finite-progress-track,
+.finite-mode-light .finite-unit-segment,
+.finite-mode-light .finite-prefs-btn {
+    background-color: rgba(15, 23, 42, 0.08);
+    color: #0f172a;
+}
+
+.finite-mode-light .finite-prefs-btn:hover,
+.finite-mode-light .finite-prefs-btn:focus,
+.finite-mode-light .finite-unit-pill:hover,
+.finite-mode-light .finite-unit-pill:focus {
+    background-color: rgba(15, 23, 42, 0.14);
+    color: #0f172a;
+}
+
+.finite-mode-light .finite-unit-pill {
+    color: rgba(15, 23, 42, 0.76);
+}
+
+.finite-mode-light .finite-dot-lived {
+    background-color: rgba(71, 85, 105, 0.72);
+}
+
+.finite-mode-light .finite-dot-left {
+    background-color: rgba(15, 23, 42, 0.12);
+}
+
+.finite-mode-light .finite-footer-row {
+    border-color: rgba(15, 23, 42, 0.10);
 }

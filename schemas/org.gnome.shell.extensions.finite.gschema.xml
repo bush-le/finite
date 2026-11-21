@@ -37,7 +37,7 @@
       <description>Font family preset used for the top bar counter.</description>
     </key>
     <key name="bar-font-size" type="i">
-      <range min="10" max="24"/>
+      <range min="10" max="20"/>
       <default>15</default>
       <summary>Top bar font size (px)</summary>
       <description>Font size in pixels for the top bar counter.</description>

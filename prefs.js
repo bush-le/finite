@@ -28,6 +28,15 @@ export default class FinitePreferences extends ExtensionPreferences {
         const settings = this.getSettings();
         let activePage = null;
         let activeSignals = [];
+        let pendingLangIdleId = 0;
+        let isClosed = false;
+
+        const clearPendingIdle = () => {
+            if (pendingLangIdleId) {
+                GLib.Source.remove(pendingLangIdleId);
+                pendingLangIdleId = 0;
+            }
+        };
 
         const clearPageSignals = () => {
             for (const id of activeSignals)
@@ -35,7 +44,35 @@ export default class FinitePreferences extends ExtensionPreferences {
             activeSignals = [];
         };
 
+        const isValidBirth = str => {
+            if (str === '')
+                return true;
+            const parsed = parseLocalBirthDate(str);
+            return parsed !== null && parsed.getTime() <= Date.now();
+        };
+
+        const bindComboSync = (row, key, values, fallbackKey) => {
+            const syncFromSettings = () => {
+                const current = settings.get_string(key);
+                const idx = values.indexOf(current);
+                const fallbackIdx = fallbackKey ? values.indexOf(fallbackKey) : 0;
+                const safeIdx = idx >= 0 ? idx : Math.max(0, fallbackIdx);
+                if (row.get_selected() !== safeIdx)
+                    row.set_selected(safeIdx);
+            };
+            syncFromSettings();
+            row.connect('notify::selected', () => {
+                const chosen = values[row.get_selected()];
+                if (chosen && settings.get_string(key) !== chosen)
+                    settings.set_string(key, chosen);
+            });
+            activeSignals.push(settings.connect(`changed::${key}`, syncFromSettings));
+        };
+
         const renderPage = () => {
+            if (isClosed)
+                return;
+
             clearPageSignals();
             if (activePage) {
                 window.remove(activePage);
@@ -62,14 +99,12 @@ export default class FinitePreferences extends ExtensionPreferences {
                 title: t('birthDateTitle', lang),
                 text: initialBirth,
             });
-            if (initialBirth !== '' && parseLocalBirthDate(initialBirth) === null)
+            if (!isValidBirth(initialBirth))
                 birthRow.add_css_class('error');
 
             birthRow.connect('changed', () => {
                 const raw = birthRow.get_text().trim();
-                const parsed = parseLocalBirthDate(raw);
-                const validFutureCheck = parsed !== null && parsed.getTime() <= Date.now();
-                if (raw === '' || validFutureCheck) {
+                if (isValidBirth(raw)) {
                     birthRow.remove_css_class('error');
                     if (settings.get_string('birth-date') !== raw)
                         settings.set_string('birth-date', raw);
@@ -77,6 +112,13 @@ export default class FinitePreferences extends ExtensionPreferences {
                     birthRow.add_css_class('error');
                 }
             });
+            activeSignals.push(
+                settings.connect('changed::birth-date', () => {
+                    const ext = settings.get_string('birth-date');
+                    if (birthRow.get_text() !== ext)
+                        birthRow.set_text(ext);
+                })
+            );
             lifeGroup.add(birthRow);
 
             const expectancyRow = Adw.SpinRow.new_with_range(1, 150, 1);
@@ -98,36 +140,14 @@ export default class FinitePreferences extends ExtensionPreferences {
                 title: t('unitTitle', lang),
                 model: Gtk.StringList.new(t('unitLabels', lang)),
             });
-            const syncUnitFromSettings = () => {
-                const current = settings.get_string('display-unit');
-                const idx = VALID_UNITS.indexOf(current);
-                const safeIdx = idx >= 0 ? idx : VALID_UNITS.indexOf('weeks');
-                if (unitRow.get_selected() !== safeIdx)
-                    unitRow.set_selected(safeIdx);
-            };
-            syncUnitFromSettings();
-            unitRow.connect('notify::selected', () => {
-                const key = VALID_UNITS[unitRow.get_selected()];
-                if (key && settings.get_string('display-unit') !== key)
-                    settings.set_string('display-unit', key);
-            });
-            activeSignals.push(
-                settings.connect('changed::display-unit', syncUnitFromSettings)
-            );
+            bindComboSync(unitRow, 'display-unit', VALID_UNITS, 'weeks');
             displayGroup.add(unitRow);
 
             const fontRow = new Adw.ComboRow({
                 title: t('fontTitle', lang),
                 model: Gtk.StringList.new(t('fontLabels', lang)),
             });
-            const currentFont = settings.get_string('font-preset');
-            const fontIdx = VALID_FONTS.indexOf(currentFont);
-            fontRow.set_selected(fontIdx >= 0 ? fontIdx : 0);
-            fontRow.connect('notify::selected', () => {
-                const key = VALID_FONTS[fontRow.get_selected()];
-                if (key && settings.get_string('font-preset') !== key)
-                    settings.set_string('font-preset', key);
-            });
+            bindComboSync(fontRow, 'font-preset', VALID_FONTS, 'system');
             displayGroup.add(fontRow);
 
             const fontSizeRow = Adw.SpinRow.new_with_range(
@@ -148,28 +168,14 @@ export default class FinitePreferences extends ExtensionPreferences {
                 title: t('accentThemeTitle', lang),
                 model: Gtk.StringList.new(t('accentLabels', lang)),
             });
-            const currentAccent = settings.get_string('accent-theme');
-            const accentIdx = VALID_ACCENTS.indexOf(currentAccent);
-            accentRow.set_selected(accentIdx >= 0 ? accentIdx : 0);
-            accentRow.connect('notify::selected', () => {
-                const key = VALID_ACCENTS[accentRow.get_selected()];
-                if (key && settings.get_string('accent-theme') !== key)
-                    settings.set_string('accent-theme', key);
-            });
+            bindComboSync(accentRow, 'accent-theme', VALID_ACCENTS, 'amber');
             displayGroup.add(accentRow);
 
             const posRow = new Adw.ComboRow({
                 title: t('positionTitle', lang),
                 model: Gtk.StringList.new(t('positionLabels', lang)),
             });
-            const currentPos = settings.get_string('panel-position');
-            const posIdx = POSITION_KEYS.indexOf(currentPos);
-            posRow.set_selected(posIdx >= 0 ? posIdx : POSITION_KEYS.indexOf('center'));
-            posRow.connect('notify::selected', () => {
-                const key = POSITION_KEYS[posRow.get_selected()];
-                if (key && settings.get_string('panel-position') !== key)
-                    settings.set_string('panel-position', key);
-            });
+            bindComboSync(posRow, 'panel-position', POSITION_KEYS, 'center');
             displayGroup.add(posRow);
 
             const indexRow = Adw.SpinRow.new_with_range(0, 20, 1);
@@ -181,19 +187,17 @@ export default class FinitePreferences extends ExtensionPreferences {
                 title: t('languageTitle', lang),
                 model: Gtk.StringList.new(t('languageLabels', lang)),
             });
-            const currentLangPref = settings.get_string('language');
-            const langIdx = VALID_LANGUAGES.indexOf(currentLangPref);
-            langRow.set_selected(langIdx >= 0 ? langIdx : 0);
-            langRow.connect('notify::selected', () => {
-                const key = VALID_LANGUAGES[langRow.get_selected()];
-                if (key && settings.get_string('language') !== key) {
-                    settings.set_string('language', key);
-                    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            bindComboSync(langRow, 'language', VALID_LANGUAGES, 'auto');
+            activeSignals.push(
+                settings.connect('changed::language', () => {
+                    clearPendingIdle();
+                    pendingLangIdleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                        pendingLangIdleId = 0;
                         renderPage();
                         return GLib.SOURCE_REMOVE;
                     });
-                }
-            });
+                })
+            );
             displayGroup.add(langRow);
 
             const reminderRow = new Adw.EntryRow({
@@ -206,6 +210,13 @@ export default class FinitePreferences extends ExtensionPreferences {
                 if (settings.get_string('reminder-text') !== clean)
                     settings.set_string('reminder-text', clean);
             });
+            activeSignals.push(
+                settings.connect('changed::reminder-text', () => {
+                    const ext = settings.get_string('reminder-text');
+                    if (reminderRow.get_text() !== ext)
+                        reminderRow.set_text(ext);
+                })
+            );
             displayGroup.add(reminderRow);
 
             page.add(displayGroup);
@@ -215,6 +226,8 @@ export default class FinitePreferences extends ExtensionPreferences {
 
         renderPage();
         window.connect('close-request', () => {
+            isClosed = true;
+            clearPendingIdle();
             clearPageSignals();
             return false;
         });

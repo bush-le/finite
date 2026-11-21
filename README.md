@@ -6,7 +6,7 @@ Minimalist Memento Mori countdown for the GNOME top bar (GNOME Shell 45–50).
 
 - **Ultra-minimal top bar:** Displays a single plain number (`tabular-nums`) with no icon, no unit suffix, and no thousands separator.
 - **Flexible units:** Switch between `seconds`, `minutes`, `hours`, `days`, `weeks`, and `percent` directly from the popover or Preferences.
-- **Life in Weeks popover:** Click the number to view a cached Cairo `52 × N` life-week grid, live countdown, quick conversions, and a short plain-text reminder.
+- **Two-tier GitHub-style popover:** Click the number to view a macro life-in-years grid (`30` years/row grouped by decades) paired with a GitHub-style `365`-day grid for the current year, live countdown, `Today` / `Year` / `Life` progress bars, EN/VI switcher, color themes, and custom bar font/size controls.
 - **Zero-Idle-Wakeup design:** Adaptive timer cadence (daily for `days`/`weeks`/`percent`, hourly for `hours`, per-minute for `minutes`, 1s only when `seconds` is active or popover is open), paused when unmapped or fullscreen, and disabled automatically on the lock screen (`session-modes: ["user"]`).
 
 ## Privacy & Security

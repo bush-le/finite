@@ -1,6 +1,8 @@
 import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Pango from 'gi://Pango';
 import St from 'gi://St';
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -32,13 +34,17 @@ class FiniteIndicator extends PanelMenu.Button {
         this._popoverView = null;
         this._menuItem = null;
         this._activeFontClass = null;
+        this._activeFontSize = null;
 
         this._label = new St.Label({
             text: '--',
             style_class: 'finite-bar-label',
             y_align: Clutter.ActorAlign.CENTER,
         });
+        this._label.clutter_text.y_align = Clutter.ActorAlign.CENTER;
+        this._label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.add_child(this._label);
+        this.label_actor = this._label;
 
         // PopupMenu.open() skips opening when menu.isEmpty() is true, so register the menu item up front.
         this._ensurePopover();
@@ -99,17 +105,27 @@ class FiniteIndicator extends PanelMenu.Button {
         }
     }
 
-    updateView(stats, unit, expectancyYears, reminderText, lang, fontPreset, fontSize, accentTheme) {
+    updateView(stats, unit, expectancyYears, reminderText, lang, fontPreset, fontSize, accentTheme, nowMs, isLight) {
         if (this._label) {
             this._applyFontStyle(fontPreset, fontSize);
             this._label.text = formatBarValue(stats, unit);
         }
 
-        if (this._popoverOpen && this._popoverView)
-            this._popoverView.update(stats, unit, expectancyYears, reminderText, lang, accentTheme);
+        if (this._popoverView) {
+            this._popoverView.update(
+                stats,
+                unit,
+                expectancyYears,
+                reminderText,
+                lang,
+                accentTheme,
+                nowMs,
+                isLight
+            );
+        }
     }
 
-    destroy() {
+    _onDestroy() {
         if (this._label && this._mappedSignalId) {
             this._label.disconnect(this._mappedSignalId);
             this._mappedSignalId = 0;
@@ -127,7 +143,7 @@ class FiniteIndicator extends PanelMenu.Button {
         this._onSelectUnit = null;
         this._onOpenPrefs = null;
         this._onStateChange = null;
-        super.destroy();
+        super._onDestroy();
     }
 });
 
@@ -136,10 +152,29 @@ export default class FiniteExtension extends Extension {
         this._settings = this.getSettings();
         this._timerId = 0;
         this._settingsSignals = [];
+        this._sleepSignalId = 0;
 
         this._displaySignalId = global.display.connect('in-fullscreen-changed', () => {
             this._onWake();
         });
+
+        try {
+            this._sleepSignalId = Gio.DBus.system.signal_subscribe(
+                'org.freedesktop.login1',
+                'org.freedesktop.login1.Manager',
+                'PrepareForSleep',
+                '/org/freedesktop/login1',
+                null,
+                Gio.DBusSignalFlags.NONE,
+                (_conn, _sender, _path, _iface, _signal, params) => {
+                    const [sleeping] = params.deepUnpack();
+                    if (!sleeping)
+                        this._onWake();
+                }
+            );
+        } catch {
+            this._sleepSignalId = 0;
+        }
 
         for (const key of [
             'birth-date',
@@ -191,6 +226,20 @@ export default class FiniteExtension extends Extension {
         this._onWake();
     }
 
+    _isShellLightMode() {
+        try {
+            const bg = Main.panel.statusArea.quickSettings?.menu?.box
+                ?.get_theme_node()
+                ?.get_background_color();
+            if (!bg || bg.alpha === 0)
+                return false;
+            const lum = (0.299 * bg.red + 0.587 * bg.green + 0.114 * bg.blue) / 255;
+            return lum > 0.5;
+        } catch {
+            return false;
+        }
+    }
+
     _isPaused() {
         if (!this._indicator || !this._indicator.isLabelMapped)
             return true;
@@ -224,6 +273,7 @@ export default class FiniteExtension extends Extension {
         const prefLang = this._settings.get_string('language');
         const lang = resolveLanguage(prefLang, GLib.get_language_names());
         const reminderText = this._settings.get_string('reminder-text');
+        const isLight = this._isShellLightMode();
 
         const stats = computeLifeStats(birthDate, expectancyYears, nowMs);
         this._indicator.updateView(
@@ -234,16 +284,19 @@ export default class FiniteExtension extends Extension {
             lang,
             fontPreset,
             fontSize,
-            accentTheme
+            accentTheme,
+            nowMs,
+            isLight
         );
 
-        if (!stats)
+        const popoverOpen = this._indicator.isPopoverOpen;
+        if (!stats && !popoverOpen)
             return;
 
         const delaySec = computeNextDelaySeconds(
             unit,
             nowMs,
-            this._indicator.isPopoverOpen,
+            popoverOpen,
             this._isPaused()
         );
 
@@ -262,6 +315,11 @@ export default class FiniteExtension extends Extension {
 
     disable() {
         this._clearTimer();
+
+        if (this._sleepSignalId) {
+            Gio.DBus.system.signal_unsubscribe(this._sleepSignalId);
+            this._sleepSignalId = 0;
+        }
 
         if (this._displaySignalId) {
             global.display.disconnect(this._displaySignalId);

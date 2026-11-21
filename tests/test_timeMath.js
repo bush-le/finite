@@ -3,6 +3,7 @@ import {
     VALID_FONTS,
     VALID_ACCENTS,
     clampBarFontSize,
+    sanitizeReminderText,
     parseLocalBirthDate,
     computeTargetDate,
     computeLifeStats,
@@ -23,8 +24,18 @@ assertEq(VALID_UNITS.join(','), 'seconds,minutes,hours,days,weeks,percent', 'val
 assertEq(VALID_FONTS.join(','), 'system,inter,jetbrains,mono', 'valid fonts');
 assertEq(VALID_ACCENTS.join(','), 'amber,cyan,emerald,rose', 'valid accents');
 assertEq(clampBarFontSize(8), 10, 'font size min clamp');
-assertEq(clampBarFontSize(40), 24, 'font size max clamp');
+assertEq(clampBarFontSize(40), 20, 'font size max clamp');
 assertEq(clampBarFontSize(15), 15, 'font size valid');
+
+// 0a. Reminder sanitization (control chars & UTF-16 safe slicing)
+assertEq(sanitizeReminderText('  hello\nworld\t!  '), 'hello world !', 'strips newlines/tabs');
+assertEq(Array.from(sanitizeReminderText('🔥'.repeat(210))).length, 200, 'slices by Unicode code points');
+
+// 0b. Exact calendar livedYears on birthday boundary
+const beforeBday = computeLifeStats('2003-01-01', 80, new Date(2003, 11, 31, 23, 59, 0).getTime());
+assertEq(beforeBday.livedYears, 0, 'day before first birthday is 0 livedYears');
+const onBday = computeLifeStats('2003-01-01', 80, new Date(2004, 0, 1, 0, 1, 0).getTime());
+assertEq(onBday.livedYears, 1, 'on first birthday is 1 livedYears');
 
 // 0b. Day & year progress helper
 const midday = new Date(2026, 6, 2, 12, 0, 0, 0).getTime();
