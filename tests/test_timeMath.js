@@ -2,13 +2,21 @@ import {
     VALID_UNITS,
     VALID_FONTS,
     VALID_ACCENTS,
+    VALID_CYCLES,
+    MAX_MILESTONE_TITLE_LENGTH,
     clampBarFontSize,
     sanitizeReminderText,
+    sanitizeMilestoneTitle,
+    normalizeCycleScope,
     parseLocalBirthDate,
+    parseLocalDeadline,
     computeTargetDate,
     computeLifeStats,
+    computeMilestoneStats,
+    computeCycleStats,
     computeDayAndYearProgress,
     computeYearDaysStats,
+    buildTopBarSegments,
     formatBarValue,
     formatPopoverHero,
     computeNextDelaySeconds,
@@ -106,5 +114,44 @@ assertEq(computeNextDelaySeconds('seconds', midNow, false, false), 1, 'seconds u
 assertEq(computeNextDelaySeconds('minutes', new Date(2026, 0, 1, 12, 0, 15).getTime(), false, false), 45, 'minutes sleeps to next minute');
 assertEq(computeNextDelaySeconds('hours', new Date(2026, 0, 1, 12, 10, 0).getTime(), false, false), 3000, 'hours sleeps to next hour');
 assertEq(computeNextDelaySeconds('days', new Date(2026, 0, 1, 23, 59, 50).getTime(), false, false), 10, 'days sleeps to midnight');
+
+// 7. Milestone & cycle math (Phase 2)
+assertEq(VALID_CYCLES.join(','), 'day,month,year', 'valid cycles');
+assertEq(MAX_MILESTONE_TITLE_LENGTH, 60, 'max milestone title length');
+assertEq(normalizeCycleScope('invalid'), 'day', 'cycle fallback');
+assertEq(parseLocalDeadline(''), null, 'empty deadline');
+assertEq(parseLocalDeadline('2026-02-30'), null, 'invalid calendar deadline');
+assertEq(parseLocalDeadline('2026-12-20 25:00'), null, 'invalid hour deadline');
+const dDate = parseLocalDeadline('2026-12-20');
+assertEq(dDate.normalized, '2026-12-20', 'date-only normalized');
+assertEq(new Date(dDate.timestampMs).getHours(), 23, 'date-only resolves end of day');
+const dTime = parseLocalDeadline('2026-12-20 08:30');
+assertEq(dTime.normalized, '2026-12-20 08:30', 'datetime normalized');
+
+const nowRef = new Date(2026, 10, 22, 16, 0, 0).getTime();
+assertEq(computeMilestoneStats('TOEIC', 0, 'bad-date', nowRef), null, 'invalid deadline returns null');
+const expiredM = computeMilestoneStats('TOEIC', 0, '2026-11-20', nowRef);
+assertEq(expiredM.isExpired, true, 'past deadline is expired');
+assertEq(expiredM.remainingSeconds, 0, 'expired clamps to 0');
+assertEq(expiredM.percentElapsed, 100, 'expired progress is 100%');
+
+const badStartM = computeMilestoneStats('TOEIC\nExam', nowRef + 99999999, '2026-12-20', nowRef);
+assertEq(badStartM.title, 'TOEIC Exam', 'milestone title strips newline');
+assertEq(badStartM.percentElapsed >= 0 && badStartM.percentElapsed <= 100, true, 'clamped percent on bad startMs');
+
+const leapFeb = computeCycleStats('month', new Date(2024, 1, 29, 12, 0, 0).getTime());
+assertEq(leapFeb.remainingHours, 12, 'leap feb 29 midday has 12h left in month');
+const yearEnd = computeCycleStats('year', new Date(2026, 11, 31, 23, 59, 0).getTime());
+assertEq(yearEnd.remainingSeconds, 60, 'dec 31 23:59 has 60s left in year');
+
+assertEq(buildTopBarSegments('100', null, null).map(s => s.text).join(''), '100', 'life only');
+assertEq(buildTopBarSegments('100', '28', null).map(s => s.text).join(''), '100 · 28', 'life + milestone');
+assertEq(buildTopBarSegments('100', null, '28742').map(s => s.text).join(''), '100 · 28742', 'life + cycle');
+assertEq(buildTopBarSegments('100', '28', '28742').map(s => s.text).join(''), '100 · 28 · 28742', 'all 3 counters');
+assertEq(buildTopBarSegments(null, '28', null).map(s => s.text).join(''), '28', 'milestone when birth-date unset');
+assertEq(buildTopBarSegments(null, null, null).map(s => s.text).join(''), '--', 'fallback when nothing active');
+
+const tenSecBefore = new Date(2026, 10, 22, 16, 0, 0).getTime();
+assertEq(computeNextDelaySeconds('days', tenSecBefore, false, false, tenSecBefore + 10000), 10, 'wakes at exact milestone target');
 
 print('TEST_TIMEMATH_OK');
