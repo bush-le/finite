@@ -159,11 +159,8 @@ class FiniteIndicator extends PanelMenu.Button {
 
     _applySegments(segments) {
         const byKind = new Map();
-        const seps = [];
         for (const seg of segments) {
-            if (seg.kind === 'sep')
-                seps.push(seg.text);
-            else
+            if (seg.kind !== 'sep')
                 byKind.set(seg.kind, seg.text);
         }
 
@@ -175,17 +172,15 @@ class FiniteIndicator extends PanelMenu.Button {
         if (lifeText !== null)
             this._lifeLabel.text = lifeText;
 
-        this._sep1.visible = seps.length >= 1;
-        if (seps.length >= 1)
-            this._sep1.text = seps[0];
+        this._sep1.visible = lifeText !== null && (milestoneText !== null || cycleText !== null);
+        this._sep1.text = ' · ';
 
         this._milestoneLabel.visible = milestoneText !== null;
         if (milestoneText !== null)
             this._milestoneLabel.text = milestoneText;
 
-        this._sep2.visible = seps.length >= 2;
-        if (seps.length >= 2)
-            this._sep2.text = seps[1];
+        this._sep2.visible = milestoneText !== null && cycleText !== null;
+        this._sep2.text = ' · ';
 
         this._cycleLabel.visible = cycleText !== null;
         if (cycleText !== null)

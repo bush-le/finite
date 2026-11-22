@@ -76,6 +76,10 @@ if ! grep -q "this._ensurePopover()" extension.js; then
   echo "FAIL: extension.js must initialize menu item up front so PopupMenu is never empty" >&2
   exit 1
 fi
+if grep -q "seps.length >= 1" extension.js; then
+  echo "FAIL: extension.js _applySegments must compute separator visibility from adjacent segments, not seps.length" >&2
+  exit 1
+fi
 
 BUNDLE="finite@bush-le.github.io.shell-extension.zip"
 rm -f "$BUNDLE"
