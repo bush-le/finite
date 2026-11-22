@@ -7,12 +7,16 @@ import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/
 
 import {
     MAX_BAR_FONT_SIZE,
+    MAX_MILESTONE_TITLE_LENGTH,
     MAX_REMINDER_LENGTH,
     MIN_BAR_FONT_SIZE,
     VALID_ACCENTS,
+    VALID_CYCLES,
     VALID_FONTS,
     VALID_UNITS,
     parseLocalBirthDate,
+    parseLocalDeadline,
+    sanitizeMilestoneTitle,
     sanitizeReminderText,
 } from './lib/timeMath.js';
 import {
@@ -220,6 +224,104 @@ export default class FinitePreferences extends ExtensionPreferences {
             displayGroup.add(reminderRow);
 
             page.add(displayGroup);
+
+            const milestoneGroup = new Adw.PreferencesGroup({
+                title: t('milestoneGroupTitle', lang),
+                description: t('milestoneGroupDesc', lang),
+            });
+
+            const milestoneSwitch = new Adw.SwitchRow({
+                title: t('milestoneEnabledTitle', lang),
+            });
+            settings.bind(
+                'milestone-enabled',
+                milestoneSwitch,
+                'active',
+                Gio.SettingsBindFlags.DEFAULT
+            );
+            milestoneGroup.add(milestoneSwitch);
+
+            const milestoneTitleRow = new Adw.EntryRow({
+                title: t('milestoneTitleLabel', lang),
+                text: settings.get_string('milestone-title'),
+            });
+            milestoneTitleRow.set_max_length(MAX_MILESTONE_TITLE_LENGTH);
+            milestoneTitleRow.connect('changed', () => {
+                const clean = sanitizeMilestoneTitle(milestoneTitleRow.get_text());
+                if (settings.get_string('milestone-title') !== clean)
+                    settings.set_string('milestone-title', clean);
+            });
+            activeSignals.push(
+                settings.connect('changed::milestone-title', () => {
+                    const ext = settings.get_string('milestone-title');
+                    if (milestoneTitleRow.get_text() !== ext)
+                        milestoneTitleRow.set_text(ext);
+                })
+            );
+            milestoneGroup.add(milestoneTitleRow);
+
+            const initialDeadline = settings.get_string('milestone-deadline');
+            const milestoneDeadlineRow = new Adw.EntryRow({
+                title: t('milestoneDeadlineLabel', lang),
+                text: initialDeadline,
+            });
+            if (initialDeadline !== '' && parseLocalDeadline(initialDeadline) === null)
+                milestoneDeadlineRow.add_css_class('error');
+
+            milestoneDeadlineRow.connect('changed', () => {
+                const raw = milestoneDeadlineRow.get_text().trim();
+                if (raw === '') {
+                    milestoneDeadlineRow.remove_css_class('error');
+                    if (settings.get_string('milestone-deadline') !== '') {
+                        settings.set_string('milestone-deadline', '');
+                        settings.set_int64('milestone-start-ms', 0);
+                    }
+                    return;
+                }
+                const parsed = parseLocalDeadline(raw);
+                if (parsed !== null) {
+                    milestoneDeadlineRow.remove_css_class('error');
+                    if (settings.get_string('milestone-deadline') !== parsed.normalized) {
+                        settings.set_int64('milestone-start-ms', Date.now());
+                        settings.set_string('milestone-deadline', parsed.normalized);
+                    }
+                } else {
+                    milestoneDeadlineRow.add_css_class('error');
+                }
+            });
+            activeSignals.push(
+                settings.connect('changed::milestone-deadline', () => {
+                    const ext = settings.get_string('milestone-deadline');
+                    if (milestoneDeadlineRow.get_text() !== ext)
+                        milestoneDeadlineRow.set_text(ext);
+                })
+            );
+            milestoneGroup.add(milestoneDeadlineRow);
+            page.add(milestoneGroup);
+
+            const cycleGroup = new Adw.PreferencesGroup({
+                title: t('cycleGroupTitle', lang),
+            });
+
+            const cycleSwitch = new Adw.SwitchRow({
+                title: t('cycleEnabledTitle', lang),
+            });
+            settings.bind(
+                'cycle-enabled',
+                cycleSwitch,
+                'active',
+                Gio.SettingsBindFlags.DEFAULT
+            );
+            cycleGroup.add(cycleSwitch);
+
+            const cycleScopeRow = new Adw.ComboRow({
+                title: t('cycleScopeTitle', lang),
+                model: Gtk.StringList.new(t('cycleScopeLabels', lang)),
+            });
+            bindComboSync(cycleScopeRow, 'cycle-scope', VALID_CYCLES, 'day');
+            cycleGroup.add(cycleScopeRow);
+            page.add(cycleGroup);
+
             window.add(page);
             activePage = page;
         };
