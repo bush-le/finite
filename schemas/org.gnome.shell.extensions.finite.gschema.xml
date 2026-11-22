@@ -84,5 +84,40 @@
       <summary>Popover reminder quote</summary>
       <description>Short plain-text reminder shown inside the life-grid popover.</description>
     </key>
+    <key name="milestone-enabled" type="b">
+      <default>false</default>
+      <summary>Enable pinned deadline milestone</summary>
+      <description>Show pinned hard-deadline countdown on top bar and popover.</description>
+    </key>
+    <key name="milestone-title" type="s">
+      <default>""</default>
+      <summary>Pinned milestone title</summary>
+      <description>Short plain-text title shown inside the popover.</description>
+    </key>
+    <key name="milestone-deadline" type="s">
+      <default>""</default>
+      <summary>Pinned milestone deadline</summary>
+      <description>Local deadline in YYYY-MM-DD or YYYY-MM-DD HH:MM format.</description>
+    </key>
+    <key name="milestone-start-ms" type="x">
+      <default>0</default>
+      <summary>Pinned milestone start timestamp (ms)</summary>
+      <description>Epoch milliseconds when the current deadline was set.</description>
+    </key>
+    <key name="cycle-enabled" type="b">
+      <default>false</default>
+      <summary>Show short-term cycle counter on top bar</summary>
+      <description>Display Day, Month, or Year remaining counter on the top bar.</description>
+    </key>
+    <key name="cycle-scope" type="s">
+      <choices>
+        <choice value="day"/>
+        <choice value="month"/>
+        <choice value="year"/>
+      </choices>
+      <default>"day"</default>
+      <summary>Top bar short-term cycle scope</summary>
+      <description>Which short-term cycle to display on the top bar (day, month, year).</description>
+    </key>
   </schema>
 </schemalist>
