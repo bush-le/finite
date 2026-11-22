@@ -76,8 +76,8 @@ if ! grep -q "this._ensurePopover()" extension.js; then
   echo "FAIL: extension.js must initialize menu item up front so PopupMenu is never empty" >&2
   exit 1
 fi
-if grep -q "seps.length >= 1" extension.js; then
-  echo "FAIL: extension.js _applySegments must compute separator visibility from adjacent segments, not seps.length" >&2
+if grep -q " · " extension.js lib/timeMath.js; then
+  echo "FAIL: Top bar must have no separator characters between numbers" >&2
   exit 1
 fi
 

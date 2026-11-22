@@ -144,14 +144,14 @@ assertEq(leapFeb.remainingHours, 12, 'leap feb 29 midday has 12h left in month')
 const yearEnd = computeCycleStats('year', new Date(2026, 11, 31, 23, 59, 0).getTime());
 assertEq(yearEnd.remainingSeconds, 60, 'dec 31 23:59 has 60s left in year');
 
-assertEq(buildTopBarSegments('100', null, null).map(s => s.text).join(''), '100', 'life only');
-assertEq(buildTopBarSegments('100', '28', null).map(s => s.text).join(''), '100 · 28', 'life + milestone');
-assertEq(buildTopBarSegments('100', null, '28742').map(s => s.text).join(''), '100 · 28742', 'life + cycle');
-assertEq(buildTopBarSegments('100', '28', '28742').map(s => s.text).join(''), '100 · 28 · 28742', 'all 3 counters');
-assertEq(buildTopBarSegments(null, '28', null).map(s => s.text).join(''), '28', 'milestone when birth-date unset');
-assertEq(buildTopBarSegments(null, '28', '28742').map(s => s.text).join(''), '28 · 28742', 'milestone + cycle when birth-date unset');
-assertEq(buildTopBarSegments(null, null, '28742').map(s => s.text).join(''), '28742', 'cycle only when birth-date unset');
-assertEq(buildTopBarSegments(null, null, null).map(s => s.text).join(''), '--', 'fallback when nothing active');
+assertEq(buildTopBarSegments('100', null, null).map(s => s.text).join(' '), '100', 'life only');
+assertEq(buildTopBarSegments('100', '28', null).map(s => s.text).join(' '), '100 28', 'life + milestone');
+assertEq(buildTopBarSegments('100', null, '28742').map(s => s.text).join(' '), '100 28742', 'life + cycle');
+assertEq(buildTopBarSegments('100', '28', '28742').map(s => s.text).join(' '), '100 28 28742', 'all 3 counters');
+assertEq(buildTopBarSegments(null, '28', null).map(s => s.text).join(' '), '28', 'milestone when birth-date unset');
+assertEq(buildTopBarSegments(null, '28', '28742').map(s => s.text).join(' '), '28 28742', 'milestone + cycle when birth-date unset');
+assertEq(buildTopBarSegments(null, null, '28742').map(s => s.text).join(' '), '28742', 'cycle only when birth-date unset');
+assertEq(buildTopBarSegments(null, null, null).map(s => s.text).join(' '), '--', 'fallback when nothing active');
 
 const tenSecBefore = new Date(2026, 10, 22, 16, 0, 0).getTime();
 assertEq(computeNextDelaySeconds('days', tenSecBefore, false, false, tenSecBefore + 10000), 10, 'wakes at exact milestone target');

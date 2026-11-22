@@ -1,15 +1,10 @@
 .finite-bar-box {
-    spacing: 0;
+    spacing: 12px;
 }
 
 .finite-bar-label {
     font-feature-settings: "tnum";
     font-weight: bold;
-}
-
-.finite-bar-sep {
-    font-weight: bold;
-    opacity: 0.42;
 }
 
 .finite-bar-muted {

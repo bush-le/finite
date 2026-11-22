@@ -61,20 +61,14 @@ class FiniteIndicator extends PanelMenu.Button {
 
         this._lifeLabel = createBarLabel();
         this._lifeLabel.text = '--';
-        this._sep1 = createBarLabel('finite-bar-sep');
-        this._sep1.visible = false;
         this._milestoneLabel = createBarLabel('finite-bar-theme-amber');
         this._milestoneLabel.visible = false;
-        this._sep2 = createBarLabel('finite-bar-sep');
-        this._sep2.visible = false;
         this._cycleLabel = createBarLabel('finite-bar-muted');
         this._cycleLabel.visible = false;
 
         this._allLabels = [
             this._lifeLabel,
-            this._sep1,
             this._milestoneLabel,
-            this._sep2,
             this._cycleLabel,
         ];
         for (const lbl of this._allLabels)
@@ -159,10 +153,8 @@ class FiniteIndicator extends PanelMenu.Button {
 
     _applySegments(segments) {
         const byKind = new Map();
-        for (const seg of segments) {
-            if (seg.kind !== 'sep')
-                byKind.set(seg.kind, seg.text);
-        }
+        for (const seg of segments)
+            byKind.set(seg.kind, seg.text);
 
         const lifeText = byKind.get('life') ?? null;
         const milestoneText = byKind.get('milestone') ?? null;
@@ -172,15 +164,9 @@ class FiniteIndicator extends PanelMenu.Button {
         if (lifeText !== null)
             this._lifeLabel.text = lifeText;
 
-        this._sep1.visible = lifeText !== null && (milestoneText !== null || cycleText !== null);
-        this._sep1.text = ' · ';
-
         this._milestoneLabel.visible = milestoneText !== null;
         if (milestoneText !== null)
             this._milestoneLabel.text = milestoneText;
-
-        this._sep2.visible = milestoneText !== null && cycleText !== null;
-        this._sep2.text = ' · ';
 
         this._cycleLabel.visible = cycleText !== null;
         if (cycleText !== null)
@@ -240,9 +226,7 @@ class FiniteIndicator extends PanelMenu.Button {
         this._menuItem = null;
         this._barBox = null;
         this._lifeLabel = null;
-        this._sep1 = null;
         this._milestoneLabel = null;
-        this._sep2 = null;
         this._cycleLabel = null;
         this._allLabels = [];
         this._onSelectUnit = null;
