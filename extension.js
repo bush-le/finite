@@ -11,7 +11,6 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {
-    VALID_ACCENTS,
     VALID_FONTS,
     buildTopBarSegments,
     clampBarFontSize,
@@ -20,7 +19,6 @@ import {
     computeMilestoneStats,
     computeNextDelaySeconds,
     formatBarValue,
-    normalizeAccentTheme,
     normalizeFontPreset,
 } from './lib/timeMath.js';
 import { resolveLanguage } from './lib/i18n.js';
@@ -51,7 +49,6 @@ class FiniteIndicator extends PanelMenu.Button {
         this._menuItem = null;
         this._activeFontClass = null;
         this._activeFontSize = null;
-        this._activeAccentClass = null;
 
         this._barBox = new St.BoxLayout({
             vertical: false,
@@ -61,9 +58,9 @@ class FiniteIndicator extends PanelMenu.Button {
 
         this._lifeLabel = createBarLabel();
         this._lifeLabel.text = '--';
-        this._milestoneLabel = createBarLabel('finite-bar-theme-amber');
+        this._milestoneLabel = createBarLabel();
         this._milestoneLabel.visible = false;
-        this._cycleLabel = createBarLabel('finite-bar-muted');
+        this._cycleLabel = createBarLabel();
         this._cycleLabel.visible = false;
 
         this._allLabels = [
@@ -118,7 +115,7 @@ class FiniteIndicator extends PanelMenu.Button {
         this.menu.addMenuItem(this._menuItem);
     }
 
-    _applyBarStyling(fontPreset, fontSize, accentTheme) {
+    _applyBarStyling(fontPreset, fontSize) {
         if (!this._barBox)
             return;
 
@@ -139,15 +136,6 @@ class FiniteIndicator extends PanelMenu.Button {
             for (const lbl of this._allLabels)
                 lbl.style = sizeCss;
             this._activeFontSize = safeSize;
-        }
-
-        const safeAccent = normalizeAccentTheme(accentTheme);
-        const nextAccentClass = `finite-bar-theme-${safeAccent}`;
-        if (this._activeAccentClass !== nextAccentClass && this._milestoneLabel) {
-            for (const theme of VALID_ACCENTS)
-                this._milestoneLabel.remove_style_class_name(`finite-bar-theme-${theme}`);
-            this._milestoneLabel.add_style_class_name(nextAccentClass);
-            this._activeAccentClass = nextAccentClass;
         }
     }
 
@@ -188,7 +176,7 @@ class FiniteIndicator extends PanelMenu.Button {
         isLight,
     }) {
         if (this._barBox) {
-            this._applyBarStyling(fontPreset, fontSize, accentTheme);
+            this._applyBarStyling(fontPreset, fontSize);
             const lifeText = lifeStats ? formatBarValue(lifeStats, unit) : null;
             const milestoneText = milestoneStats ? formatBarValue(milestoneStats, unit) : null;
             const cycleText = cycleStats ? formatBarValue(cycleStats, unit) : null;

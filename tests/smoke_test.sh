@@ -80,6 +80,10 @@ if grep -q " · " extension.js lib/timeMath.js; then
   echo "FAIL: Top bar must have no separator characters between numbers" >&2
   exit 1
 fi
+if grep -qE "finite-bar-theme-|finite-bar-muted" extension.js stylesheet.css; then
+  echo "FAIL: Top bar numbers must share pure uniform styling without accent/muted classes" >&2
+  exit 1
+fi
 
 BUNDLE="finite@bush-le.github.io.shell-extension.zip"
 rm -f "$BUNDLE"
