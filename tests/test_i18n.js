@@ -6,6 +6,8 @@ import {
     unitShortLabel,
     unitCaptionLabel,
     formatSummaryRow,
+    formatCycleCardMeta,
+    monthShortLabel,
 } from '../lib/i18n.js';
 
 function assertEq(actual, expected, label) {
@@ -40,5 +42,14 @@ assertEq(
     '10 tuần · 70 ngày · 1,680 giờ',
     'vi summary row'
 );
+
+assertEq(t('milestoneGroupTitle', 'en'), 'Pinned Deadline', 'en milestone group');
+assertEq(t('milestoneGroupTitle', 'vi'), 'Cột mốc Deadline', 'vi milestone group');
+assertEq(t('cycleScopeTitle', 'en'), 'Top bar cycle', 'en cycle scope');
+assertEq(t('cycleScopeTitle', 'vi'), 'Nhịp hiển thị trên bar', 'vi cycle scope');
+assertEq(monthShortLabel(10, 'en'), 'Nov', 'en month short');
+assertEq(monthShortLabel(10, 'vi'), 'Thg 11', 'vi month short');
+assertEq(formatCycleCardMeta({ remainingSeconds: 120, percentElapsed: 50 }, 'seconds', 'en'), '50% · 120s', 'en cycle card meta');
+assertEq(formatCycleCardMeta({ remainingSeconds: 120, percentElapsed: 50 }, 'seconds', 'vi'), '50% · 120s', 'vi cycle card meta');
 
 print('TEST_I18N_OK');

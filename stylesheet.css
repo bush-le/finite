@@ -1,6 +1,35 @@
+.finite-bar-box {
+    spacing: 0;
+}
+
 .finite-bar-label {
     font-feature-settings: "tnum";
     font-weight: bold;
+}
+
+.finite-bar-sep {
+    font-weight: bold;
+    opacity: 0.42;
+}
+
+.finite-bar-muted {
+    opacity: 0.78;
+}
+
+.finite-bar-theme-amber {
+    color: #fbbf24;
+}
+
+.finite-bar-theme-cyan {
+    color: #38bdf8;
+}
+
+.finite-bar-theme-emerald {
+    color: #34d399;
+}
+
+.finite-bar-theme-rose {
+    color: #fb7185;
 }
 
 .finite-font-system {
@@ -101,6 +130,31 @@
 .finite-progress-fill {
     height: 4px;
     border-radius: 2px;
+}
+
+.finite-milestone-card {
+    padding: 8px 12px;
+    spacing: 6px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.finite-milestone-header {
+    spacing: 10px;
+}
+
+.finite-milestone-title {
+    font-size: 0.80em;
+    font-weight: 600;
+    color: #f4f4f6;
+}
+
+.finite-milestone-meta {
+    font-size: 0.78em;
+    font-weight: 700;
+    font-feature-settings: "tnum";
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .finite-grid-card {
@@ -266,9 +320,15 @@
 }
 
 .finite-mode-light .finite-mini-bar-card,
+.finite-mode-light .finite-milestone-card,
 .finite-mode-light .finite-grid-card {
     background-color: rgba(15, 23, 42, 0.04);
     border: 1px solid rgba(15, 23, 42, 0.09);
+}
+
+.finite-mode-light .finite-milestone-title,
+.finite-mode-light .finite-milestone-meta {
+    color: #0f172a;
 }
 
 .finite-mode-light .finite-progress-track,
