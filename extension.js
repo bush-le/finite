@@ -11,15 +11,31 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {
+    VALID_ACCENTS,
     VALID_FONTS,
+    buildTopBarSegments,
     clampBarFontSize,
+    computeCycleStats,
     computeLifeStats,
+    computeMilestoneStats,
     computeNextDelaySeconds,
     formatBarValue,
+    normalizeAccentTheme,
     normalizeFontPreset,
 } from './lib/timeMath.js';
 import { resolveLanguage } from './lib/i18n.js';
 import { FinitePopoverView } from './lib/popoverView.js';
+
+function createBarLabel(extraClass = '') {
+    const label = new St.Label({
+        text: '',
+        style_class: extraClass ? `finite-bar-label ${extraClass}` : 'finite-bar-label',
+        y_align: Clutter.ActorAlign.CENTER,
+    });
+    label.clutter_text.y_align = Clutter.ActorAlign.CENTER;
+    label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+    return label;
+}
 
 const FiniteIndicator = GObject.registerClass(
 class FiniteIndicator extends PanelMenu.Button {
@@ -35,21 +51,42 @@ class FiniteIndicator extends PanelMenu.Button {
         this._menuItem = null;
         this._activeFontClass = null;
         this._activeFontSize = null;
+        this._activeAccentClass = null;
 
-        this._label = new St.Label({
-            text: '--',
-            style_class: 'finite-bar-label',
+        this._barBox = new St.BoxLayout({
+            vertical: false,
+            style_class: 'finite-bar-box',
             y_align: Clutter.ActorAlign.CENTER,
         });
-        this._label.clutter_text.y_align = Clutter.ActorAlign.CENTER;
-        this._label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.add_child(this._label);
-        this.label_actor = this._label;
+
+        this._lifeLabel = createBarLabel();
+        this._lifeLabel.text = '--';
+        this._sep1 = createBarLabel('finite-bar-sep');
+        this._sep1.visible = false;
+        this._milestoneLabel = createBarLabel('finite-bar-theme-amber');
+        this._milestoneLabel.visible = false;
+        this._sep2 = createBarLabel('finite-bar-sep');
+        this._sep2.visible = false;
+        this._cycleLabel = createBarLabel('finite-bar-muted');
+        this._cycleLabel.visible = false;
+
+        this._allLabels = [
+            this._lifeLabel,
+            this._sep1,
+            this._milestoneLabel,
+            this._sep2,
+            this._cycleLabel,
+        ];
+        for (const lbl of this._allLabels)
+            this._barBox.add_child(lbl);
+
+        this.add_child(this._barBox);
+        this.label_actor = this._lifeLabel;
 
         // PopupMenu.open() skips opening when menu.isEmpty() is true, so register the menu item up front.
         this._ensurePopover();
 
-        this._mappedSignalId = this._label.connect('notify::mapped', () => {
+        this._mappedSignalId = this._barBox.connect('notify::mapped', () => {
             this._onStateChange?.();
         });
 
@@ -64,7 +101,7 @@ class FiniteIndicator extends PanelMenu.Button {
     }
 
     get isLabelMapped() {
-        return this._label ? this._label.mapped : false;
+        return this._barBox ? this._barBox.mapped : false;
     }
 
     _ensurePopover() {
@@ -87,47 +124,114 @@ class FiniteIndicator extends PanelMenu.Button {
         this.menu.addMenuItem(this._menuItem);
     }
 
-    _applyFontStyle(fontPreset, fontSize) {
-        if (!this._label)
+    _applyBarStyling(fontPreset, fontSize, accentTheme) {
+        if (!this._barBox)
             return;
+
         const safePreset = normalizeFontPreset(fontPreset);
-        const nextClass = `finite-font-${safePreset}`;
-        if (this._activeFontClass !== nextClass) {
-            for (const preset of VALID_FONTS)
-                this._label.remove_style_class_name(`finite-font-${preset}`);
-            this._label.add_style_class_name(nextClass);
-            this._activeFontClass = nextClass;
+        const nextFontClass = `finite-font-${safePreset}`;
+        if (this._activeFontClass !== nextFontClass) {
+            for (const lbl of this._allLabels) {
+                for (const preset of VALID_FONTS)
+                    lbl.remove_style_class_name(`finite-font-${preset}`);
+                lbl.add_style_class_name(nextFontClass);
+            }
+            this._activeFontClass = nextFontClass;
         }
+
         const safeSize = clampBarFontSize(fontSize);
         if (this._activeFontSize !== safeSize) {
-            this._label.style = `font-size: ${safeSize}px;`;
+            const sizeCss = `font-size: ${safeSize}px;`;
+            for (const lbl of this._allLabels)
+                lbl.style = sizeCss;
             this._activeFontSize = safeSize;
+        }
+
+        const safeAccent = normalizeAccentTheme(accentTheme);
+        const nextAccentClass = `finite-bar-theme-${safeAccent}`;
+        if (this._activeAccentClass !== nextAccentClass && this._milestoneLabel) {
+            for (const theme of VALID_ACCENTS)
+                this._milestoneLabel.remove_style_class_name(`finite-bar-theme-${theme}`);
+            this._milestoneLabel.add_style_class_name(nextAccentClass);
+            this._activeAccentClass = nextAccentClass;
         }
     }
 
-    updateView(stats, unit, expectancyYears, reminderText, lang, fontPreset, fontSize, accentTheme, nowMs, isLight) {
-        if (this._label) {
-            this._applyFontStyle(fontPreset, fontSize);
-            this._label.text = formatBarValue(stats, unit);
+    _applySegments(segments) {
+        const byKind = new Map();
+        const seps = [];
+        for (const seg of segments) {
+            if (seg.kind === 'sep')
+                seps.push(seg.text);
+            else
+                byKind.set(seg.kind, seg.text);
+        }
+
+        const lifeText = byKind.get('life') ?? null;
+        const milestoneText = byKind.get('milestone') ?? null;
+        const cycleText = byKind.get('cycle') ?? null;
+
+        this._lifeLabel.visible = lifeText !== null;
+        if (lifeText !== null)
+            this._lifeLabel.text = lifeText;
+
+        this._sep1.visible = seps.length >= 1;
+        if (seps.length >= 1)
+            this._sep1.text = seps[0];
+
+        this._milestoneLabel.visible = milestoneText !== null;
+        if (milestoneText !== null)
+            this._milestoneLabel.text = milestoneText;
+
+        this._sep2.visible = seps.length >= 2;
+        if (seps.length >= 2)
+            this._sep2.text = seps[1];
+
+        this._cycleLabel.visible = cycleText !== null;
+        if (cycleText !== null)
+            this._cycleLabel.text = cycleText;
+    }
+
+    updateView({
+        lifeStats,
+        milestoneStats,
+        cycleStats,
+        unit,
+        expectancyYears,
+        reminderText,
+        lang,
+        fontPreset,
+        fontSize,
+        accentTheme,
+        nowMs,
+        isLight,
+    }) {
+        if (this._barBox) {
+            this._applyBarStyling(fontPreset, fontSize, accentTheme);
+            const lifeText = lifeStats ? formatBarValue(lifeStats, unit) : null;
+            const milestoneText = milestoneStats ? formatBarValue(milestoneStats, unit) : null;
+            const cycleText = cycleStats ? formatBarValue(cycleStats, unit) : null;
+            this._applySegments(buildTopBarSegments(lifeText, milestoneText, cycleText));
         }
 
         if (this._popoverView) {
             this._popoverView.update(
-                stats,
+                lifeStats,
                 unit,
                 expectancyYears,
                 reminderText,
                 lang,
                 accentTheme,
                 nowMs,
-                isLight
+                isLight,
+                milestoneStats
             );
         }
     }
 
     _onDestroy() {
-        if (this._label && this._mappedSignalId) {
-            this._label.disconnect(this._mappedSignalId);
+        if (this._barBox && this._mappedSignalId) {
+            this._barBox.disconnect(this._mappedSignalId);
             this._mappedSignalId = 0;
         }
         if (this.menu && this._menuSignalId) {
@@ -139,7 +243,13 @@ class FiniteIndicator extends PanelMenu.Button {
             this._popoverView = null;
         }
         this._menuItem = null;
-        this._label = null;
+        this._barBox = null;
+        this._lifeLabel = null;
+        this._sep1 = null;
+        this._milestoneLabel = null;
+        this._sep2 = null;
+        this._cycleLabel = null;
+        this._allLabels = [];
         this._onSelectUnit = null;
         this._onOpenPrefs = null;
         this._onStateChange = null;
@@ -185,6 +295,12 @@ export default class FiniteExtension extends Extension {
             'accent-theme',
             'language',
             'reminder-text',
+            'milestone-enabled',
+            'milestone-title',
+            'milestone-deadline',
+            'milestone-start-ms',
+            'cycle-enabled',
+            'cycle-scope',
         ]) {
             this._settingsSignals.push(
                 this._settings.connect(`changed::${key}`, () => this._onWake())
@@ -275,9 +391,26 @@ export default class FiniteExtension extends Extension {
         const reminderText = this._settings.get_string('reminder-text');
         const isLight = this._isShellLightMode();
 
-        const stats = computeLifeStats(birthDate, expectancyYears, nowMs);
-        this._indicator.updateView(
-            stats,
+        const milestoneEnabled = this._settings.get_boolean('milestone-enabled');
+        const milestoneTitle = this._settings.get_string('milestone-title');
+        const milestoneDeadline = this._settings.get_string('milestone-deadline');
+        const milestoneStartMs = this._settings.get_int64('milestone-start-ms');
+
+        const cycleEnabled = this._settings.get_boolean('cycle-enabled');
+        const cycleScope = this._settings.get_string('cycle-scope');
+
+        const lifeStats = computeLifeStats(birthDate, expectancyYears, nowMs);
+        const milestoneStats = milestoneEnabled
+            ? computeMilestoneStats(milestoneTitle, milestoneStartMs, milestoneDeadline, nowMs)
+            : null;
+        const cycleStats = cycleEnabled
+            ? computeCycleStats(cycleScope, nowMs)
+            : null;
+
+        this._indicator.updateView({
+            lifeStats,
+            milestoneStats,
+            cycleStats,
             unit,
             expectancyYears,
             reminderText,
@@ -286,18 +419,19 @@ export default class FiniteExtension extends Extension {
             fontSize,
             accentTheme,
             nowMs,
-            isLight
-        );
+            isLight,
+        });
 
         const popoverOpen = this._indicator.isPopoverOpen;
-        if (!stats && !popoverOpen)
+        if (!lifeStats && !milestoneStats && !cycleStats && !popoverOpen)
             return;
 
         const delaySec = computeNextDelaySeconds(
             unit,
             nowMs,
             popoverOpen,
-            this._isPaused()
+            this._isPaused(),
+            milestoneStats ? milestoneStats.targetMs : null
         );
 
         if (delaySec !== null) {
